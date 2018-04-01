@@ -1,0 +1,87 @@
+VERSION ""
+
+
+NS_ :
+    NS_DESC_
+    CM_
+    BA_DEF_
+    BA_
+    VAL_
+    CAT_DEF_
+    CAT_
+    FILTER
+    BA_DEF_DEF_
+    EV_DATA_
+    ENVVAR_DATA_
+    SGTYPE_
+    SGTYPE_VAL_
+    BA_DEF_SGTYPE_
+    BA_SGTYPE_
+    SIG_TYPE_REF_
+    VAL_TABLE_
+    SIG_GROUP_
+    SIG_VALTYPE_
+    SIGTYPE_VALTYPE_
+    BO_TX_BU_
+    BA_DEF_REL_
+    BA_REL_
+    BA_DEF_DEF_REL_
+    BU_SG_REL_
+    BU_EV_REL_
+    BU_BO_REL_
+    SG_MUL_VAL_
+
+BS_:
+
+BU_: XXX
+
+
+BO_ 239 NEW_MSG_1: 8 XXX
+ SG_ NEW_SIGNAL_1 : 23|8@0+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_2 : 47|8@0+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_3 : 55|8@0+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_4 : 63|8@0+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_5 : 39|8@0+ (1,0) [0|255] "" XXX
+
+BO_ 217 NEW_MSG_2: 8 XXX
+ SG_ Accelerator_1 : 23|8@0+ (1,0) [0|255] "" XXX
+ SG_ Accelerator_2 : 31|8@0+ (1,0) [0|255] "" XXX
+ SG_ Accelerator_pressed : 63|8@0+ (1,0) [0|255] "" XXX
+
+BO_ 165 NEW_MSG_3: 8 XXX
+ SG_ NEW_SIGNAL_1 : 7|8@0+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_2 : 15|8@0+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_3 : 23|8@0+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_4 : 31|8@0+ (1,0) [0|255] "" XXX
+
+BO_ 596 NEW_MSG_4: 8 XXX
+ SG_ NEW_SIGNAL_3 : 23|8@0+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_1 : 7|8@0+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_2 : 8|8@1+ (1,0) [0|255] "" XXX
+
+BO_ 407 NEW_MSG_5: 8 XXX
+ SG_ NEW_SIGNAL_2 : 15|8@0+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_1 : 7|8@0+ (1,0) [0|255] "" XXX
+
+BO_ 513 NEW_MSG_6: 8 XXX
+ SG_ NEW_SIGNAL_1 : 7|8@0+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_3 : 23|8@0+ (1,0) [0|255] "" XXX
+ SG_ SOME_COUNTER : 15|8@0+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_2 : 31|8@0+ (1,0) [0|255] "" XXX
+
+BO_ 518 NEW_MSG_7: 8 XXX
+ SG_ NEW_SIGNAL_1 : 7|8@0+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_2 : 15|8@0+ (1,0) [0|255] "" XXX
+
+BO_ 709 NEW_MSG_8: 8 XXX
+ SG_ NEW_SIGNAL_2 : 16|16@1+ (1,0) [0|65535] "" XXX
+ SG_ NEW_SIGNAL_1 : 15|8@0+ (1,0) [0|255] "" XXX
+
+BO_ 256 NEW_MSG_9: 8 XXX
+ SG_ ePower : 32|8@1+ (1,0) [0|255] "" XXX
+
+BO_ 417 NEW_MSG_10: 8 XXX
+ SG_ Speed : 16|16@1+ (0.015625,0) [0|65535] "KPH" XXX
+ 
+BO_ 770 NEW_MSG_11: 8 XXX		
+ SG_ STEERING_ANGLE : 16|16@1+ (0.002747,-90) [0|65535] "DEG" XXX
