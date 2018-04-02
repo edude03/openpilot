@@ -41,11 +41,11 @@ def get_can_parser(CP):
 
   signals = [
     # sig_name, sig_address, default
-    ("NEW_MSG_10", "Speed", 0)
-    ("NEW_MSG_11", "STEERING_ANGLE", 0)
-    ("NEW_MSG_2", "Accelerator_pressed", 0)
+    ("Speed", "NEW_MSG_10", "Speed", 0)
+    ("STEERING_ANGLE", "NEW_MSG_11", 0)
+    ("Accelerator_pressed", "NEW_MSG_2", 0)
     # ("GEAR", "GEAR_PACKET", 0),
-    # ("BRAKE_PRESSED", "BRAKE_MODULE", 0),
+    ("Brake_Force", "NEW_MSG_1" 0),
     # ("GAS_PEDAL", "GAS_PEDAL", 0),
     # ("WHEEL_SPEED_FL", "WHEEL_SPEEDS", 0),
     # ("WHEEL_SPEED_FR", "WHEEL_SPEEDS", 0),
@@ -57,7 +57,6 @@ def get_can_parser(CP):
     # ("DOOR_OPEN_RR", "SEATS_DOORS", 1),
     # ("SEATBELT_DRIVER_UNLATCHED", "SEATS_DOORS", 1),
     # ("TC_DISABLED", "ESP_CONTROL", 1),
-    # ("STEER_ANGLE", "STEER_ANGLE_SENSOR", 0),
     # ("STEER_FRACTION", "STEER_ANGLE_SENSOR", 0),
     # ("STEER_RATE", "STEER_ANGLE_SENSOR", 0),
     # ("GAS_RELEASED", "PCM_CRUISE", 0),
@@ -121,7 +120,6 @@ class CarState(object):
     self.steer_error = False
     self.brake_error = 0
 
-    can_gear = cp.vl["GEAR_PACKET"]['GEAR']
     self.brake_pressed = cp.vl["BRAKE_MODULE"]['BRAKE_PRESSED']
     self.pedal_gas = cp.vl["GAS_PEDAL"]['GAS_PEDAL']
     self.car_gas = self.pedal_gas
@@ -147,7 +145,7 @@ class CarState(object):
     self.angle_steers = cp.vl["STEER_ANGLE_SENSOR"]['STEER_ANGLE'] + cp.vl["STEER_ANGLE_SENSOR"]['STEER_FRACTION']
     self.angle_steers_rate = cp.vl["STEER_ANGLE_SENSOR"]['STEER_RATE']
     self.gear_shifter = parse_gear_shifter(can_gear, self.car_fingerprint)
-    self.main_on = cp.vl["PCM_CRUISE_2"]['MAIN_ON']
+    self.main_on = True # cp.vl["PCM_CRUISE_2"]['MAIN_ON']
     self.left_blinker_on = False # cp.vl["STEERING_LEVERS"]['TURN_SIGNALS'] == 1
     self.right_blinker_on = False #cp.vl["STEERING_LEVERS"]['TURN_SIGNALS'] == 2
 
@@ -158,7 +156,7 @@ class CarState(object):
     self.steer_torque_motor = cp.vl["STEER_TORQUE_SENSOR"]['STEER_TORQUE_EPS']
 
     self.user_brake = 0
-    self.v_cruise_pcm = cp.vl["PCM_CRUISE_2"]['SET_SPEED']
+    self.v_cruise_pcm = Falsecp.vl["PCM_CRUISE_2"]['SET_SPEED']
     self.pcm_acc_status = cp.vl["PCM_CRUISE"]['CRUISE_STATE']
     self.gas_pressed = not cp.vl["PCM_CRUISE"]['GAS_RELEASED']
     self.low_speed_lockout = cp.vl["PCM_CRUISE_2"]['LOW_SPEED_LOCKOUT'] == 2

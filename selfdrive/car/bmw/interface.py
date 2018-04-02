@@ -62,48 +62,29 @@ class CarInterface(object):
     # pedal
     ret.enableCruise = True
 
+    # TODO: Add a check for REX or not
+
     # FIXME: hardcoding honda civic 2016 touring params so they can be used to
     # scale unknown params for other cars
-    mass_civic = 2923./2.205 + std_cargo
-    wheelbase_civic = 2.70
-    centerToFront_civic = wheelbase_civic * 0.4
-    centerToRear_civic = wheelbase_civic - centerToFront_civic
+    mass = 2899 + std_cargo # Pounds
+    wheelbase = 2.570 # Meters
+
+    # Does the i3 have BMW 50/50 weight distribution?
+    centerToFront = wheelbase_civic * 0.5
+    centerToRear = wheelbase_civic * 0.5
+    
+    
     rotationalInertia_civic = 2500
     tireStiffnessFront_civic = 85400
     tireStiffnessRear_civic = 90000
-
-    if candidate == CAR.PRIUS:
-      ret.safetyParam = 66  # see conversion factor for STEER_TORQUE_EPS in dbc file
-      ret.wheelbase = 2.70
-      ret.steerRatio = 14.5  # TODO: find exact value for Prius
-      ret.mass = 3045./2.205 + std_cargo
-      ret.steerKp, ret.steerKi = 0.6, 0.05
-      ret.steerKf = 0.00006   # full torque for 10 deg at 80mph means 0.00007818594
-      ret.steerRateCost = 2.
-    elif candidate in [CAR.RAV4, CAR.RAV4H]:
-      ret.safetyParam = 73  # see conversion factor for STEER_TORQUE_EPS in dbc file
-      ret.wheelbase = 2.65
-      ret.steerRatio = 14.5 # Rav4 2017
-      ret.mass = 3650./2.205 + std_cargo  # mean between normal and hybrid
-      ret.steerKp, ret.steerKi = 0.6, 0.05
-      ret.steerKf = 0.00006   # full torque for 10 deg at 80mph means 0.00007818594
-      ret.steerRateCost = 1.
-    elif candidate == CAR.COROLLA:
-      ret.safetyParam = 100 # see conversion factor for STEER_TORQUE_EPS in dbc file
-      ret.wheelbase = 2.70
-      ret.steerRatio = 17.8
-      ret.mass = 2860./2.205 + std_cargo  # mean between normal and hybrid
-      ret.steerKp, ret.steerKi = 0.2, 0.05
-      ret.steerKf = 0.00003   # full torque for 20 deg at 80mph means 0.00007818594
-      ret.steerRateCost = 1.
-    elif candidate == CAR.LEXUS_RXH:
-      ret.safetyParam = 100 # see conversion factor for STEER_TORQUE_EPS in dbc file
-      ret.wheelbase = 2.79
-      ret.steerRatio = 16.  # official specs say 14.8, but it does not seem right
-      ret.mass = 4481./2.205 + std_cargo  # mean between min and max
-      ret.steerKp, ret.steerKi = 0.6, 0.1
-      ret.steerKf = 0.00006   # full torque for 10 deg at 80mph means 0.00007818594
-      ret.steerRateCost = .8
+  
+    ret.safetyParam = 66  # see conversion factor for STEER_TORQUE_EPS in dbc file
+    ret.wheelbase = 
+    ret.steerRatio = 14.5  # TODO: find exact value for Prius
+    ret.mass = 3045./2.205 + std_cargo
+    ret.steerKp, ret.steerKi = 0.6, 0.05
+    ret.steerKf = 0.00006   # full torque for 10 deg at 80mph means 0.00007818594
+    ret.steerRateCost = 2.
 
     ret.centerToFront = ret.wheelbase * 0.44
 
@@ -143,8 +124,8 @@ class CarInterface(object):
     ret.brakeMaxBP = [5., 20.]
     ret.brakeMaxV = [1., 0.8]
 
-    ret.enableCamera = not check_ecu_msgs(fingerprint, candidate, ECU.CAM)
-    ret.enableDsu = not check_ecu_msgs(fingerprint, candidate, ECU.DSU)
+    ret.enableCamera = False # not check_ecu_msgs(fingerprint, candidate, ECU.CAM)
+    ret.enableDsu = False # not check_ecu_msgs(fingerprint, candidate, ECU.DSU)
     ret.enableApgs = False # not check_ecu_msgs(fingerprint, candidate, ECU.APGS)
     print "ECU Camera Simulated: ", ret.enableCamera
     print "ECU DSU Simulated: ", ret.enableDsu
@@ -180,10 +161,10 @@ class CarInterface(object):
     ret.aEgo = self.CS.a_ego
     ret.yawRate = self.VM.yaw_rate(self.CS.angle_steers * CV.DEG_TO_RAD, self.CS.v_ego)
     ret.standstill = self.CS.standstill
-    ret.wheelSpeeds.fl = self.CS.v_wheel_fl
-    ret.wheelSpeeds.fr = self.CS.v_wheel_fr
-    ret.wheelSpeeds.rl = self.CS.v_wheel_rl
-    ret.wheelSpeeds.rr = self.CS.v_wheel_rr
+    ret.wheelSpeeds.fl = 0 #self.CS.v_wheel_fl
+    ret.wheelSpeeds.fr = 0 #self.CS.v_wheel_fr
+    ret.wheelSpeeds.rl = 0 #self.CS.v_wheel_rl
+    ret.wheelSpeeds.rr = 0 #self.CS.v_wheel_rr
 
     # gear shifter
     ret.gearShifter = self.CS.gear_shifter
@@ -205,16 +186,14 @@ class CarInterface(object):
     ret.steeringPressed = self.CS.steer_override
 
     # cruise state
-    ret.cruiseState.enabled = self.CS.pcm_acc_status != 0
+    ret.cruiseState.enabled = False self.CS.pcm_acc_status != 0
     ret.cruiseState.speed = self.CS.v_cruise_pcm * CV.KPH_TO_MS
     ret.cruiseState.available = bool(self.CS.main_on)
     ret.cruiseState.speedOffset = 0.
-    if self.CP.carFingerprint == CAR.RAV4H:
-      # ignore standstill in hybrid rav4, since pcm allows to restart without
-      # receiving any special command
-      ret.cruiseState.standstill = False
-    else:
-      ret.cruiseState.standstill = self.CS.pcm_acc_status == 7
+    
+    # ignore standstill in hybrid rav4, since pcm allows to restart without
+    # receiving any special command
+    ret.cruiseState.standstill = False
 
     # TODO: button presses
     buttonEvents = []
