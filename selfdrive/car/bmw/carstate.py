@@ -41,11 +41,13 @@ def get_can_parser(CP):
 
   signals = [
     # sig_name, sig_address, default
-    ("Speed", "NEW_MSG_10",  0),
+    ("SPEED", "CAR_SPEED",  0),
     ("STEERING_ANGLE", "NEW_MSG_11", 0),
     ("Accelerator_pressed", "NEW_MSG_2", 0),
     # ("GEAR", "GEAR_PACKET", 0),
-    ("Brake_Force", "NEW_MSG_1", 0),
+    ("BRAKE_FORCE", "NEW_MSG_1", 0),
+    ("RATE", "STEER_ANGLE_RATE", 0),
+    ("TORQUE", "STEER_TORQUE", 0),
     # ("GAS_PEDAL", "GAS_PEDAL", 0),
     # ("WHEEL_SPEED_FL", "WHEEL_SPEEDS", 0),
     # ("WHEEL_SPEED_FR", "WHEEL_SPEEDS", 0),
@@ -131,7 +133,7 @@ class CarState(object):
     #self.v_wheel_fr = cp.vl["WHEEL_SPEEDS"]['WHEEL_SPEED_FR'] * CV.KPH_TO_MS
     #self.v_wheel_rl = cp.vl["WHEEL_SPEEDS"]['WHEEL_SPEED_RL'] * CV.KPH_TO_MS
     #self.v_wheel_rr = cp.vl["WHEEL_SPEEDS"]['WHEEL_SPEED_RR'] * CV.KPH_TO_MS
-    self.v_wheel = cp.vl["NEW_MSG_10"]["Speed"] * CV.KPH_TO_MS #(self.v_wheel_fl + self.v_wheel_fr + self.v_wheel_rl + self.v_wheel_rr) / 4.
+    self.v_wheel = cp.vl["CAR_SPEED"]["SPEED"] * CV.KPH_TO_MS #(self.v_wheel_fl + self.v_wheel_fr + self.v_wheel_rl + self.v_wheel_rr) / 4.
 
     # Kalman filter
     if abs(self.v_wheel - self.v_ego) > 2.0:  # Prevent large accelerations when car starts at non zero speed
@@ -145,7 +147,7 @@ class CarState(object):
 
     can_gear = 0
 
-    self.angle_steers_rate = 0 # cp.vl["STEER_ANGLE_SENSOR"]['STEER_RATE']
+    self.angle_steers_rate = cp.vl["STEER_ANGLE_RATE"]["RATE"]
     self.gear_shifter = parse_gear_shifter(can_gear, self.car_fingerprint)
     self.main_on = True # cp.vl["PCM_CRUISE_2"]['MAIN_ON']
     self.left_blinker_on = False # cp.vl["STEERING_LEVERS"]['TURN_SIGNALS'] == 1
@@ -154,7 +156,7 @@ class CarState(object):
     # we could use the override bit from dbc, but it's triggered at too high torque values
     self.steer_override = 0 # abs(cp.vl["STEER_TORQUE_SENSOR"]['STEER_TORQUE_DRIVER']) > 100
     self.steer_error = 0 # cp.vl["EPS_STATUS"]['LKA_STATE'] == 50
-    self.steer_torque_driver = 0 #cp.vl["STEER_TORQUE_SENSOR"]['STEER_TORQUE_DRIVER']
+    self.steer_torque_driver = cp.vl["STEER_TORQUE"]["TORQUE"]
     self.steer_torque_motor = 0 #cp.vl["STEER_TORQUE_SENSOR"]['STEER_TORQUE_EPS']
 
     self.user_brake = 0

@@ -80,8 +80,11 @@ class CarInterface(object):
     ret.safetyParam = 66  # see conversion factor for STEER_TORQUE_EPS in dbc file
     ret.wheelbase = wheelbase 
     ret.steerRatio = 14.5  # TODO: find exact value for Prius
-    ret.mass = 3045./2.205 + std_cargo
-    #ret.steerKp, ret.steerKi = 0.6, 0.05
+    ret.mass = mass
+
+    # How do I figure out these values?
+    #ret.steerKpV, ret.steerKiV = [[0.6], [0.05]]
+    ret.steerKiBP, ret.steerKpBP = [[0.], [0.]]
     ret.steerKf = 0.00006   # full torque for 10 deg at 80mph means 0.00007818594
     ret.steerRateCost = 2.
 
