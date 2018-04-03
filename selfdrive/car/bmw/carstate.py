@@ -41,11 +41,11 @@ def get_can_parser(CP):
 
   signals = [
     # sig_name, sig_address, default
-    ("Speed", "NEW_MSG_10", "Speed", 0)
-    ("STEERING_ANGLE", "NEW_MSG_11", 0)
-    ("Accelerator_pressed", "NEW_MSG_2", 0)
+    ("Speed", "NEW_MSG_10",  0),
+    ("STEERING_ANGLE", "NEW_MSG_11", 0),
+    ("Accelerator_pressed", "NEW_MSG_2", 0),
     # ("GEAR", "GEAR_PACKET", 0),
-    ("Brake_Force", "NEW_MSG_1" 0),
+    ("Brake_Force", "NEW_MSG_1", 0),
     # ("GAS_PEDAL", "GAS_PEDAL", 0),
     # ("WHEEL_SPEED_FL", "WHEEL_SPEEDS", 0),
     # ("WHEEL_SPEED_FR", "WHEEL_SPEEDS", 0),
@@ -119,18 +119,19 @@ class CarState(object):
 
     self.steer_error = False
     self.brake_error = 0
+    self.steering_angle = cp.vl["NEW_MSG_11"]["STEERING_ANGLE"]
 
-    self.brake_pressed = cp.vl["BRAKE_MODULE"]['BRAKE_PRESSED']
-    self.pedal_gas = cp.vl["GAS_PEDAL"]['GAS_PEDAL']
+    self.brake_pressed = False # cp.vl["NEW_MSG_1"]["Brake_Force"] > 0
+    self.pedal_gas = cp.vl["NEW_MSG_2"]['Accelerator_pressed'] - 192
     self.car_gas = self.pedal_gas
     self.esp_disabled = False # cp.vl["ESP_CONTROL"]['TC_DISABLED']
 
     # calc best v_ego estimate, by averaging two opposite corners
-    self.v_wheel_fl = cp.vl["WHEEL_SPEEDS"]['WHEEL_SPEED_FL'] * CV.KPH_TO_MS
-    self.v_wheel_fr = cp.vl["WHEEL_SPEEDS"]['WHEEL_SPEED_FR'] * CV.KPH_TO_MS
-    self.v_wheel_rl = cp.vl["WHEEL_SPEEDS"]['WHEEL_SPEED_RL'] * CV.KPH_TO_MS
-    self.v_wheel_rr = cp.vl["WHEEL_SPEEDS"]['WHEEL_SPEED_RR'] * CV.KPH_TO_MS
-    self.v_wheel = (self.v_wheel_fl + self.v_wheel_fr + self.v_wheel_rl + self.v_wheel_rr) / 4.
+    #i#self.v_wheel_fl = cp.vl["WHEEL_SPEEDS"]['WHEEL_SPEED_FL'] * CV.KPH_TO_MS
+    #self.v_wheel_fr = cp.vl["WHEEL_SPEEDS"]['WHEEL_SPEED_FR'] * CV.KPH_TO_MS
+    #self.v_wheel_rl = cp.vl["WHEEL_SPEEDS"]['WHEEL_SPEED_RL'] * CV.KPH_TO_MS
+    #self.v_wheel_rr = cp.vl["WHEEL_SPEEDS"]['WHEEL_SPEED_RR'] * CV.KPH_TO_MS
+    self.v_wheel = cp.vl["NEW_MSG_10"]["Speed"] * CV.KPH_TO_MS #(self.v_wheel_fl + self.v_wheel_fr + self.v_wheel_rl + self.v_wheel_rr) / 4.
 
     # Kalman filter
     if abs(self.v_wheel - self.v_ego) > 2.0:  # Prevent large accelerations when car starts at non zero speed
@@ -142,8 +143,9 @@ class CarState(object):
     self.a_ego = float(v_ego_x[1])
     self.standstill = not self.v_wheel > 0.001
 
-    self.angle_steers = cp.vl["STEER_ANGLE_SENSOR"]['STEER_ANGLE'] + cp.vl["STEER_ANGLE_SENSOR"]['STEER_FRACTION']
-    self.angle_steers_rate = cp.vl["STEER_ANGLE_SENSOR"]['STEER_RATE']
+    can_gear = 0
+
+    self.angle_steers_rate = 0 # cp.vl["STEER_ANGLE_SENSOR"]['STEER_RATE']
     self.gear_shifter = parse_gear_shifter(can_gear, self.car_fingerprint)
     self.main_on = True # cp.vl["PCM_CRUISE_2"]['MAIN_ON']
     self.left_blinker_on = False # cp.vl["STEERING_LEVERS"]['TURN_SIGNALS'] == 1
@@ -152,13 +154,13 @@ class CarState(object):
     # we could use the override bit from dbc, but it's triggered at too high torque values
     self.steer_override = 0 # abs(cp.vl["STEER_TORQUE_SENSOR"]['STEER_TORQUE_DRIVER']) > 100
     self.steer_error = 0 # cp.vl["EPS_STATUS"]['LKA_STATE'] == 50
-    self.steer_torque_driver = cp.vl["STEER_TORQUE_SENSOR"]['STEER_TORQUE_DRIVER']
-    self.steer_torque_motor = cp.vl["STEER_TORQUE_SENSOR"]['STEER_TORQUE_EPS']
+    self.steer_torque_driver = 0 #cp.vl["STEER_TORQUE_SENSOR"]['STEER_TORQUE_DRIVER']
+    self.steer_torque_motor = 0 #cp.vl["STEER_TORQUE_SENSOR"]['STEER_TORQUE_EPS']
 
     self.user_brake = 0
-    self.v_cruise_pcm = Falsecp.vl["PCM_CRUISE_2"]['SET_SPEED']
-    self.pcm_acc_status = cp.vl["PCM_CRUISE"]['CRUISE_STATE']
-    self.gas_pressed = not cp.vl["PCM_CRUISE"]['GAS_RELEASED']
-    self.low_speed_lockout = cp.vl["PCM_CRUISE_2"]['LOW_SPEED_LOCKOUT'] == 2
-    self.brake_lights = bool(cp.vl["ESP_CONTROL"]['BRAKE_LIGHTS_ACC'] or self.brake_pressed)
-    self.generic_toggle = bool(cp.vl["LIGHT_STALK"]['AUTO_HIGH_BEAM'])
+    self.v_cruise_pcm = False #cp.vl["PCM_CRUISE_2"]['SET_SPEED']
+    self.pcm_acc_status = False #cp.vl["PCM_CRUISE"]['CRUISE_STATE']
+    self.gas_pressed = self.pedal_gas #not cp.vl["PCM_CRUISE"]['GAS_RELEASED']
+    self.low_speed_lockout = False #cp.vl["PCM_CRUISE_2"]['LOW_SPEED_LOCKOUT'] == 2
+    self.brake_lights = False #bool(cp.vl["ESP_CONTROL"]['BRAKE_LIGHTS_ACC'] or self.brake_pressed)
+    self.generic_toggle = False #bool(cp.vl["LIGHT_STALK"]['AUTO_HIGH_BEAM'])

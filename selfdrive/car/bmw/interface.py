@@ -4,9 +4,8 @@ from cereal import car
 from selfdrive.config import Conversions as CV
 from selfdrive.controls.lib.drive_helpers import EventTypes as ET, create_event
 from selfdrive.controls.lib.vehicle_model import VehicleModel
-from selfdrive.car.toyota.carstate import CarState, get_can_parser
-from selfdrive.car.toyota.values import ECU, check_ecu_msgs
-from common.fingerprints import TOYOTA as CAR
+from selfdrive.car.bmw.carstate import CarState, get_can_parser
+from common.fingerprints import BMW as CAR
 
 try:
   from selfdrive.car.bmw.carcontroller import CarController
@@ -70,8 +69,8 @@ class CarInterface(object):
     wheelbase = 2.570 # Meters
 
     # Does the i3 have BMW 50/50 weight distribution?
-    centerToFront = wheelbase_civic * 0.5
-    centerToRear = wheelbase_civic * 0.5
+    centerToFront = wheelbase * 0.5
+    centerToRear = wheelbase * 0.5
     
     
     rotationalInertia_civic = 2500
@@ -79,10 +78,10 @@ class CarInterface(object):
     tireStiffnessRear_civic = 90000
   
     ret.safetyParam = 66  # see conversion factor for STEER_TORQUE_EPS in dbc file
-    ret.wheelbase = 
+    ret.wheelbase = wheelbase 
     ret.steerRatio = 14.5  # TODO: find exact value for Prius
     ret.mass = 3045./2.205 + std_cargo
-    ret.steerKp, ret.steerKi = 0.6, 0.05
+    #ret.steerKp, ret.steerKi = 0.6, 0.05
     ret.steerKf = 0.00006   # full torque for 10 deg at 80mph means 0.00007818594
     ret.steerRateCost = 2.
 
@@ -93,25 +92,22 @@ class CarInterface(object):
 
     # min speed to enable ACC. if car can do stop and go, then set enabling speed
     # to a negative value, so it won't matter.
-    if candidate in [CAR.PRIUS, CAR.RAV4H, CAR.LEXUS_RXH]: # rav4 hybrid can do stop and go
-      ret.minEnableSpeed = -1.
-    elif candidate in [CAR.RAV4, CAR.COROLLA]: # TODO: hack ICE to do stop and go
-      ret.minEnableSpeed = 19. * CV.MPH_TO_MS
+    ret.minEnableSpeed = -1.
 
     centerToRear = ret.wheelbase - ret.centerToFront
     # TODO: get actual value, for now starting with reasonable value for
     # civic and scaling by mass and wheelbase
     ret.rotationalInertia = rotationalInertia_civic * \
-                            ret.mass * ret.wheelbase**2 / (mass_civic * wheelbase_civic**2)
+                            ret.mass * ret.wheelbase**2 / (mass * wheelbase**2)
 
     # TODO: start from empirically derived lateral slip stiffness for the civic and scale by
     # mass and CG position, so all cars will have approximately similar dyn behaviors
     ret.tireStiffnessFront = tireStiffnessFront_civic * \
-                             ret.mass / mass_civic * \
-                             (centerToRear / ret.wheelbase) / (centerToRear_civic / wheelbase_civic)
+                             ret.mass / mass * \
+                             (centerToRear / ret.wheelbase) / (centerToRear / wheelbase)
     ret.tireStiffnessRear = tireStiffnessRear_civic * \
-                            ret.mass / mass_civic * \
-                            (ret.centerToFront / ret.wheelbase) / (centerToFront_civic / wheelbase_civic)
+                            ret.mass / mass * \
+                            (ret.centerToFront / ret.wheelbase) / (centerToFront/ wheelbase)
 
     # no rear steering, at least on the listed cars above
     ret.steerRatioRear = 0.
@@ -159,7 +155,7 @@ class CarInterface(object):
     ret.vEgo = self.CS.v_ego
     ret.vEgoRaw = self.CS.v_ego_raw
     ret.aEgo = self.CS.a_ego
-    ret.yawRate = self.VM.yaw_rate(self.CS.angle_steers * CV.DEG_TO_RAD, self.CS.v_ego)
+    ret.yawRate = self.VM.yaw_rate(self.CS.steering_angle * CV.DEG_TO_RAD, self.CS.v_ego)
     ret.standstill = self.CS.standstill
     ret.wheelSpeeds.fl = 0 #self.CS.v_wheel_fl
     ret.wheelSpeeds.fr = 0 #self.CS.v_wheel_fr
@@ -179,16 +175,16 @@ class CarInterface(object):
     ret.brakeLights = self.CS.brake_lights
 
     # steering wheel
-    ret.steeringAngle = self.CS.angle_steers
+    ret.steeringAngle = self.CS.steering_angle
     ret.steeringRate = self.CS.angle_steers_rate
 
     ret.steeringTorque = self.CS.steer_torque_driver
-    ret.steeringPressed = self.CS.steer_override
+    ret.steeringPressed = False #iself.CS.steer_override
 
     # cruise state
-    ret.cruiseState.enabled = False self.CS.pcm_acc_status != 0
+    ret.cruiseState.enabled = False #self.CS.pcm_acc_status != 0
     ret.cruiseState.speed = self.CS.v_cruise_pcm * CV.KPH_TO_MS
-    ret.cruiseState.available = bool(self.CS.main_on)
+    ret.cruiseState.available = True #bool(self.CS.main_on)
     ret.cruiseState.speedOffset = 0.
     
     # ignore standstill in hybrid rav4, since pcm allows to restart without
@@ -233,35 +229,35 @@ class CarInterface(object):
       events.append(create_event('doorOpen', [ET.NO_ENTRY, ET.SOFT_DISABLE]))
     if ret.seatbeltUnlatched:
       events.append(create_event('seatbeltNotLatched', [ET.NO_ENTRY, ET.SOFT_DISABLE]))
-    if self.CS.esp_disabled and self.CP.enableDsu:
-      events.append(create_event('espDisabled', [ET.NO_ENTRY, ET.SOFT_DISABLE]))
-    if not self.CS.main_on and self.CP.enableDsu:
-      events.append(create_event('wrongCarMode', [ET.NO_ENTRY, ET.USER_DISABLE]))
-    if ret.gearShifter == 'reverse' and self.CP.enableDsu:
-      events.append(create_event('reverseGear', [ET.NO_ENTRY, ET.IMMEDIATE_DISABLE]))
+    #if self.CS.esp_disabled and self.CP.enableDsu:
+    #  events.append(create_event('espDisabled', [ET.NO_ENTRY, ET.SOFT_DISABLE]))
+    #if not self.CS.main_on and self.CP.enableDsu:
+    #  events.append(create_event('wrongCarMode', [ET.NO_ENTRY, ET.USER_DISABLE]))
+    #if ret.gearShifter == 'reverse' and self.CP.enableDsu:
+    #  events.append(create_event('reverseGear', [ET.NO_ENTRY, ET.IMMEDIATE_DISABLE]))
     if self.CS.steer_error:
       events.append(create_event('steerTempUnavailable', [ET.NO_ENTRY, ET.WARNING]))
-    if self.CS.low_speed_lockout and self.CP.enableDsu:
-      events.append(create_event('lowSpeedLockout', [ET.NO_ENTRY, ET.PERMANENT]))
-    if ret.vEgo < self.CP.minEnableSpeed and self.CP.enableDsu:
-      events.append(create_event('speedTooLow', [ET.NO_ENTRY]))
-      if c.actuators.gas > 0.1:
+    #if self.CS.low_speed_lockout and self.CP.enableDsu:
+    #  events.append(create_event('lowSpeedLockout', [ET.NO_ENTRY, ET.PERMANENT]))
+    #if ret.vEgo < self.CP.minEnableSpeed and self.CP.enableDsu:
+    #  events.append(create_event('speedTooLow', [ET.NO_ENTRY]))
+    #  if c.actuators.gas > 0.1:
         # some margin on the actuator to not false trigger cancellation while stopping
-        events.append(create_event('speedTooLow', [ET.IMMEDIATE_DISABLE]))
-      if ret.vEgo < 0.001:
+    #    events.append(create_event('speedTooLow', [ET.IMMEDIATE_DISABLE]))
+    #  if ret.vEgo < 0.001:
         # while in standstill, send a user alert
-        events.append(create_event('manualRestart', [ET.WARNING]))
+    #    events.append(create_event('manualRestart', [ET.WARNING]))
 
     # enable request in prius is simple, as we activate when Toyota is active (rising edge)
-    if ret.cruiseState.enabled and not self.cruise_enabled_prev:
-      events.append(create_event('pcmEnable', [ET.ENABLE]))
-    elif not ret.cruiseState.enabled:
-      events.append(create_event('pcmDisable', [ET.USER_DISABLE]))
+    #if ret.cruiseState.enabled and not self.cruise_enabled_prev:
+    #  events.append(create_event('pcmEnable', [ET.ENABLE]))
+    #elif not ret.cruiseState.enabled:
+    #  events.append(create_event('pcmDisable', [ET.USER_DISABLE]))
 
     # disable on pedals rising edge or when brake is pressed and speed isn't zero
-    if (ret.gasPressed and not self.gas_pressed_prev) or \
-       (ret.brakePressed and (not self.brake_pressed_prev or ret.vEgo > 0.001)):
-      events.append(create_event('pedalPressed', [ET.NO_ENTRY, ET.USER_DISABLE]))
+    #if (ret.gasPressed and not self.gas_pressed_prev) or \
+    #   (ret.brakePressed and (not self.brake_pressed_prev or ret.vEgo > 0.001)):
+    #  events.append(create_event('pedalPressed', [ET.NO_ENTRY, ET.USER_DISABLE]))
 
     if ret.gasPressed:
       events.append(create_event('pedalPressed', [ET.PRE_ENABLE]))
@@ -273,6 +269,7 @@ class CarInterface(object):
     self.brake_pressed_prev = ret.brakePressed
     self.cruise_enabled_prev = ret.cruiseState.enabled
 
+    print ret.gas
     return ret.as_reader()
 
   # pass in a car.CarControl

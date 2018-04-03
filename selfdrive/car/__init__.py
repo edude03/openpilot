@@ -7,8 +7,10 @@ from selfdrive.swaglog import cloudlog
 import selfdrive.messaging as messaging
 from selfdrive.car.honda.interface import CarInterface as HondaInterface
 from selfdrive.car.toyota.interface import CarInterface as ToyotaInterface
+from selfdrive.car.bmw.interface import CarInterface as BMWInterface
 from selfdrive.car.mock.interface import CarInterface as MockInterface
-from common.fingerprints import HONDA, TOYOTA
+
+from common.fingerprints import HONDA, TOYOTA, BMW
 
 try:
   from .simulator.interface import CarInterface as SimInterface
@@ -28,7 +30,7 @@ interfaces = {
   HONDA.ODYSSEY: HondaInterface,
   HONDA.ACURA_RDX: HondaInterface,  
   HONDA.PILOT: HondaInterface,
-
+  BMW.I3: BMWInterface,
 
   TOYOTA.PRIUS: ToyotaInterface,
   TOYOTA.RAV4: ToyotaInterface,
@@ -56,7 +58,7 @@ def fingerprint(logcan, timeout):
       if st is None:
         st = sec_since_boot()
       for can in a.can:
-        if can.src == 0:
+        if can.src == 1:
           finger[can.address] = len(can.dat)
         candidate_cars = eliminate_incompatible_cars(can, candidate_cars)
 
