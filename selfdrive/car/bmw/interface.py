@@ -53,7 +53,7 @@ class CarInterface(object):
     ret.carName = "bmw"
     ret.carFingerprint = candidate
 
-    ret.safetyModel = car.CarParams.SafetyModels.toyota
+    ret.safetyModel = car.CarParams.SafetyModels.noOutput
 
     ret.enableSteer = True
     ret.enableBrake = True
