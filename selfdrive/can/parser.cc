@@ -14,6 +14,7 @@
 #include <unordered_map>
 
 #include <zmq.h>
+#include <byteswap.h>
 
 #include <capnp/serialize.h>
 #include "cereal/gen/cpp/log.capnp.h"
@@ -88,6 +89,18 @@ struct MessageState {
         tmp -= (tmp >> (sig.b2-1)) ? (1ULL << sig.b2) : 0; //signed
       }
 
+      if(sig.is_little_endian) {
+        // Figure out how many bits of the signal we're using and call the correct
+        // byteswap function
+        if (sig.b2 == 16) {
+          tmp = bswap_16(tmp);
+        } else {
+          // 16 is the only size in the i3 dbc, so for now I'll be lazy
+          DEBUG("Signal is little endian, and not 16 bits);
+        }
+      
+      }
+
       DEBUG("parse %X %s -> %lld\n", address, sig.name, tmp);
 
       if (sig.type == SignalType::HONDA_CHECKSUM) {
@@ -107,6 +120,7 @@ struct MessageState {
           return false;
         }
       }
+
 
       vals[i] = tmp * sig.factor + sig.offset;
     }
