@@ -124,7 +124,7 @@ class CarState(object):
     self.steering_angle = cp.vl["NEW_MSG_11"]["STEERING_ANGLE"]
 
     self.brake_pressed = False # cp.vl["NEW_MSG_1"]["Brake_Force"] > 0
-    self.pedal_gas = cp.vl["NEW_MSG_2"]['Accelerator_pressed'] - 192
+    self.pedal_gas = cp.vl["NEW_MSG_2"]['Accelerator_pressed']
     self.car_gas = self.pedal_gas
     self.esp_disabled = False # cp.vl["ESP_CONTROL"]['TC_DISABLED']
 
@@ -135,7 +135,7 @@ class CarState(object):
     #self.v_wheel_rr = cp.vl["WHEEL_SPEEDS"]['WHEEL_SPEED_RR'] * CV.KPH_TO_MS
     self.v_wheel = cp.vl["CAR_SPEED"]["SPEED"] * CV.KPH_TO_MS #(self.v_wheel_fl + self.v_wheel_fr + self.v_wheel_rl + self.v_wheel_rr) / 4.
     
-    print cp.vl["CAR_SPEED"]["SPEED"];
+    print cp.vl["CAR_SPEED"]["SPEED"]
 
     # Kalman filter
     if abs(self.v_wheel - self.v_ego) > 2.0:  # Prevent large accelerations when car starts at non zero speed

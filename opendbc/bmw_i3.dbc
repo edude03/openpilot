@@ -43,9 +43,12 @@ BO_ 239 NEW_MSG_1: 8 XXX
  SG_ NEW_SIGNAL_2 : 47|8@0+ (1,0) [0|255] "" XXX
 
 BO_ 217 NEW_MSG_2: 8 XXX
- SG_ Accelerator_2 : 31|8@0+ (1,0) [0|255] "" XXX
- SG_ Accelerator_pressed : 63|8@0+ (1,0) [0|255] "" XXX
  SG_ Accelerator_1 : 23|8@0+ (1,0) [0|255] "" XXX
+ SG_ Accelerator_pressed : 56|1@1+ (1,0) [0|255] "" XXX
+ SG_ Accelerator_3 : 39|16@0+ (1,0) [0|65535] "" XXX
+ SG_ EPOWER : 48|8@1+ (1,0) [0|255] "" XXX
+ SG_ Accelerator_2 : 24|4@1+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_1 : 8|4@1+ (1,0) [0|15] "" XXX
 
 BO_ 165 NEW_MSG_3: 8 XXX
  SG_ NEW_SIGNAL_1 : 7|16@0+ (1,0) [0|65535] "" XXX
@@ -61,10 +64,10 @@ BO_ 407 NEW_MSG_5: 8 XXX
  SG_ NEW_SIGNAL_1 : 0|16@1+ (1,0) [0|65535] "" XXX
 
 BO_ 513 NEW_MSG_6: 8 XXX
- SG_ NEW_SIGNAL_1 : 7|8@0+ (1,0) [0|255] "" XXX
- SG_ NEW_SIGNAL_3 : 23|8@0+ (1,0) [0|255] "" XXX
  SG_ SOME_COUNTER : 15|8@0+ (1,0) [0|255] "" XXX
- SG_ NEW_SIGNAL_2 : 31|8@0+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_1 : 0|8@1+ (1,0) [0|255] "" XXX
+ SG_ NEW_SIGNAL_3 : 16|8@1+ (1,0) [0|255] "" XXX
+ SG_ COUNTER_2 : 31|8@0+ (1,0) [0|255] "" XXX
 
 BO_ 518 NEW_MSG_7: 8 XXX
  SG_ NEW_SIGNAL_3 : 23|8@0+ (1,0) [0|255] "" XXX
@@ -110,3 +113,9 @@ BO_ 410 STEER_ANGLE_RATE: 8 XXX
 
 BO_ 409 STEER_TORQUE: 8 XXX
  SG_ TORQUE : 16|16@1+ (1,-32767) [0|65535] "" XXX
+
+BO_ 502 HAZARD_WARNING: 8 XXX
+ SG_ TURN_INDICATORS : 7|8@0+ (1,0) [0|255] "" XXX
+
+BO_ 150 NEW_MSG_10: 8 XXX
+ SG_ NEW_SIGNAL_1 : 0|16@1+ (1,-98) [0|65535] "" XXX

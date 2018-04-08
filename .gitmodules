@@ -1,0 +1,3 @@
+[submodule "opendbc"]
+	path = opendbc
+	url = git@github.com:edude03/opendbc
