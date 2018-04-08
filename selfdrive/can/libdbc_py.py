@@ -43,8 +43,8 @@ typedef enum {
 
 typedef struct {
   const char* name;
-  int b1, b2, bo;
-  bool is_signed;
+  int b1, b2, bo, start_bit;
+  bool is_signed, is_little_endian;
   double factor, offset;
   SignalType type;
 } Signal;

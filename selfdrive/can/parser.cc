@@ -21,8 +21,8 @@
 
 #include "common.h"
 
-#define DEBUG(...)
-// #define DEBUG printf
+//#define DEBUG(...)
+#define DEBUG printf
 #define INFO printf
 
 
@@ -83,8 +83,14 @@ struct MessageState {
   bool parse(uint64_t sec, uint16_t ts_, uint64_t dat) {
     for (int i=0; i < parse_sigs.size(); i++) {
       auto& sig = parse_sigs[i];
-
-      int64_t tmp = (dat >> sig.bo) & ((1ULL << sig.b2)-1);
+    
+      int new_bo = sig.is_little_endian ? sig.start_bit + sig.b2 : sig.bo;
+      
+      DEBUG("Signal length: %d, signal: start: %d\n", new_bo, sig.b2);
+      DEBUG("signal captured %08x\n", dat >> new_bo);
+      DEBUG("signal mask %08x\n", (1ULL << sig.b2)-1);
+      uint64_t tmp = (dat >> new_bo) & ((1ULL << sig.b2)-1);
+      
       if (sig.is_signed) {
         tmp -= (tmp >> (sig.b2-1)) ? (1ULL << sig.b2) : 0; //signed
       }
@@ -93,15 +99,17 @@ struct MessageState {
         // Figure out how many bits of the signal we're using and call the correct
         // byteswap function
         if (sig.b2 == 16) {
+          DEBUG("%s before swap -> %08x\n", sig.name, tmp);
           tmp = bswap_16(tmp);
+          DEBUG("%s after swap -> %08x\n", sig.name, tmp);
         } else {
           // 16 is the only size in the i3 dbc, so for now I'll be lazy
-          DEBUG("Signal is little endian, and not 16 bits);
+          DEBUG("Signal is little endian, and not 16 bits\n");
         }
       
       }
 
-      DEBUG("parse %X %s -> %lld\n", address, sig.name, tmp);
+      DEBUG("parse is signed: %s, %X %s -> %llu", sig.is_signed ? "true" : "false", address, sig.name, tmp);
 
       if (sig.type == SignalType::HONDA_CHECKSUM) {
         if (honda_checksum(address, dat, size) != tmp) {
