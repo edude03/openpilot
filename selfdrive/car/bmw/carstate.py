@@ -34,7 +34,6 @@ def parse_gear_shifter(can_gear, car_fingerprint):
   # return "unknown"
   return "drive"
 
-
 def get_can_parser(CP):
   # this function generates lists for signal, messages and initial values
   dbc_f = "bmw_i3.dbc"
@@ -43,31 +42,28 @@ def get_can_parser(CP):
     # sig_name, sig_address, default
     ("SPEED", "CAR_SPEED",  0),
     ("STEERING_ANGLE", "NEW_MSG_11", 0),
-    ("Accelerator_pressed", "NEW_MSG_2", 0),
+    ("ACCELERATOR_PRESSED", "ACCELERATOR", 0),
     # ("GEAR", "GEAR_PACKET", 0),
     ("BRAKE_FORCE", "NEW_MSG_1", 0),
     ("RATE", "STEER_ANGLE_RATE", 0),
     ("TORQUE", "STEER_TORQUE", 0),
-    # ("GAS_PEDAL", "GAS_PEDAL", 0),
-    # ("WHEEL_SPEED_FL", "WHEEL_SPEEDS", 0),
-    # ("WHEEL_SPEED_FR", "WHEEL_SPEEDS", 0),
-    # ("WHEEL_SPEED_RL", "WHEEL_SPEEDS", 0),
-    # ("WHEEL_SPEED_RR", "WHEEL_SPEEDS", 0),
+    ("GAS_PEDAL", "GAS_PEDAL", 0),
+    ("WHEEL_SPEED_FL", "WHEEL_SPEEDS", 0),
+    ("WHEEL_SPEED_FR", "WHEEL_SPEEDS", 0),
+    ("WHEEL_SPEED_RL", "WHEEL_SPEEDS", 0),
+    ("WHEEL_SPEED_RR", "WHEEL_SPEEDS", 0),
+    # ("STEER_TORQUE_EPS", "STEER_TORQUE_SENSOR", 0),
     # ("DOOR_OPEN_FL", "SEATS_DOORS", 1),
     # ("DOOR_OPEN_FR", "SEATS_DOORS", 1),
     # ("DOOR_OPEN_RL", "SEATS_DOORS", 1),
     # ("DOOR_OPEN_RR", "SEATS_DOORS", 1),
     # ("SEATBELT_DRIVER_UNLATCHED", "SEATS_DOORS", 1),
     # ("TC_DISABLED", "ESP_CONTROL", 1),
-    # ("STEER_FRACTION", "STEER_ANGLE_SENSOR", 0),
-    # ("STEER_RATE", "STEER_ANGLE_SENSOR", 0),
     # ("GAS_RELEASED", "PCM_CRUISE", 0),
     # ("CRUISE_STATE", "PCM_CRUISE", 0),
     # ("MAIN_ON", "PCM_CRUISE_2", 0),
     # ("SET_SPEED", "PCM_CRUISE_2", 0),
     # ("LOW_SPEED_LOCKOUT", "PCM_CRUISE_2", 0),
-    # ("STEER_TORQUE_DRIVER", "STEER_TORQUE_SENSOR", 0),
-    # ("STEER_TORQUE_EPS", "STEER_TORQUE_SENSOR", 0),
     # ("TURN_SIGNALS", "STEERING_LEVERS", 3),   # 3 is no blinkers
     # ("LKA_STATE", "EPS_STATUS", 0),
     # ("BRAKE_LIGHTS_ACC", "ESP_CONTROL", 0),
@@ -113,8 +109,8 @@ class CarState(object):
     self.can_valid = cp.can_valid
 
     # update prevs, update must run once per loop
-    self.prev_left_blinker_on = False #self.left_blinker_on
-    self.prev_right_blinker_on = False #self.right_blinker_on
+    self.prev_left_blinker_on = self.left_blinker_on
+    self.prev_right_blinker_on = self.right_blinker_on
 
     self.door_all_closed = True
     self.seatbelt = True
@@ -123,20 +119,20 @@ class CarState(object):
     self.brake_error = 0
     self.steering_angle = cp.vl["NEW_MSG_11"]["STEERING_ANGLE"]
 
-    self.brake_pressed = False # cp.vl["NEW_MSG_1"]["Brake_Force"] > 0
-    self.pedal_gas = cp.vl["NEW_MSG_2"]['Accelerator_pressed']
-    self.car_gas = self.pedal_gas
+    self.brake = cp.vl["NEW_MSG_1"]["Brake_Force"] / 255
+    self.brake_pressed = bool(self.brake > 0)
+
+    self.gas = cp.vl["ACCELERATOR"]['ACCELERATOR_1'] / 255
+    self.gasPressed = bool(cp.vl["ACCELERATOR"]['ACCELERATOR_PRESSED'])
     self.esp_disabled = False # cp.vl["ESP_CONTROL"]['TC_DISABLED']
 
     # calc best v_ego estimate, by averaging two opposite corners
-    #i#self.v_wheel_fl = cp.vl["WHEEL_SPEEDS"]['WHEEL_SPEED_FL'] * CV.KPH_TO_MS
-    #self.v_wheel_fr = cp.vl["WHEEL_SPEEDS"]['WHEEL_SPEED_FR'] * CV.KPH_TO_MS
-    #self.v_wheel_rl = cp.vl["WHEEL_SPEEDS"]['WHEEL_SPEED_RL'] * CV.KPH_TO_MS
-    #self.v_wheel_rr = cp.vl["WHEEL_SPEEDS"]['WHEEL_SPEED_RR'] * CV.KPH_TO_MS
-    self.v_wheel = cp.vl["CAR_SPEED"]["SPEED"] * CV.KPH_TO_MS #(self.v_wheel_fl + self.v_wheel_fr + self.v_wheel_rl + self.v_wheel_rr) / 4.
+    self.v_wheel_fl = cp.vl["WHEEL_SPEEDS"]['WHEEL_SPEED_FL'] * CV.KPH_TO_MS
+    self.v_wheel_fr = cp.vl["WHEEL_SPEEDS"]['WHEEL_SPEED_FR'] * CV.KPH_TO_MS
+    self.v_wheel_rl = cp.vl["WHEEL_SPEEDS"]['WHEEL_SPEED_RL'] * CV.KPH_TO_MS
+    self.v_wheel_rr = cp.vl["WHEEL_SPEEDS"]['WHEEL_SPEED_RR'] * CV.KPH_TO_MS
+    self.v_wheel = cp.vl["CAR_SPEED"]["SPEED"] * CV.KPH_TO_MS
     
-    print cp.vl["CAR_SPEED"]["SPEED"]
-
     # Kalman filter
     if abs(self.v_wheel - self.v_ego) > 2.0:  # Prevent large accelerations when car starts at non zero speed
       self.v_ego_x = np.matrix([[self.v_wheel], [0.0]])
@@ -152,8 +148,14 @@ class CarState(object):
     self.angle_steers_rate = cp.vl["STEER_ANGLE_RATE"]["RATE"]
     self.gear_shifter = parse_gear_shifter(can_gear, self.car_fingerprint)
     self.main_on = True # cp.vl["PCM_CRUISE_2"]['MAIN_ON']
-    self.left_blinker_on = False # cp.vl["STEERING_LEVERS"]['TURN_SIGNALS'] == 1
-    self.right_blinker_on = False #cp.vl["STEERING_LEVERS"]['TURN_SIGNALS'] == 2
+    self.left_blinker_on = cp.vl["HAZARD_WARNING"]['TURN_INDICATORS'] == 0x91
+    self.right_blinker_on = cp.vl["HAZARD_WARNING"]['TURN_INDICATORS'] == 0xA1
+    
+    # These are kind of duplicates, we can detect the button press, but we're also
+    # diffing the light state above
+    #self.left_indicator_pressed = cp.vl["TURN_INDICATORS"]["INDICATOR_STALK"] == 0x8
+    #self.right_indicator_pressed = cp.vl["TURN_INDICATORS"]["INDICATOR_STALK"] == 0x4
+
 
     # we could use the override bit from dbc, but it's triggered at too high torque values
     self.steer_override = 0 # abs(cp.vl["STEER_TORQUE_SENSOR"]['STEER_TORQUE_DRIVER']) > 100

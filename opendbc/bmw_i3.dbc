@@ -42,9 +42,9 @@ BO_ 239 NEW_MSG_1: 8 XXX
  SG_ NEW_SIGNAL_5 : 39|8@0+ (1,0) [0|255] "" XXX
  SG_ NEW_SIGNAL_2 : 47|8@0+ (1,0) [0|255] "" XXX
 
-BO_ 217 NEW_MSG_2: 8 XXX
- SG_ Accelerator_1 : 23|8@0+ (1,0) [0|255] "" XXX
- SG_ Accelerator_pressed : 56|1@1+ (1,0) [0|255] "" XXX
+BO_ 217 ACCELERATOR: 8 XXX
+ SG_ ACCELERATOR_1 : 23|8@0+ (1,0) [0|255] "" XXX
+ SG_ ACCELERATOR_PRESSED : 56|1@1+ (1,0) [0|255] "" XXX
  SG_ Accelerator_3 : 39|16@0+ (1,0) [0|65535] "" XXX
  SG_ EPOWER : 48|8@1+ (1,0) [0|255] "" XXX
  SG_ Accelerator_2 : 24|4@1+ (1,0) [0|255] "" XXX
@@ -119,3 +119,8 @@ BO_ 502 HAZARD_WARNING: 8 XXX
 
 BO_ 150 NEW_MSG_10: 8 XXX
  SG_ NEW_SIGNAL_1 : 0|16@1+ (1,-98) [0|65535] "" XXX
+
+BO_ 243 NEW_MSG_18: 8 XXX
+
+BO_ 494 TURN_INDICATORS: 8 XXX
+ SG_ INDICATOR_STALK : 0|8@1+ (1,0) [0|255] "" XXX

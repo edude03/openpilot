@@ -160,10 +160,10 @@ class CarInterface(object):
     ret.aEgo = self.CS.a_ego
     ret.yawRate = self.VM.yaw_rate(self.CS.steering_angle * CV.DEG_TO_RAD, self.CS.v_ego)
     ret.standstill = self.CS.standstill
-    ret.wheelSpeeds.fl = 0 #self.CS.v_wheel_fl
-    ret.wheelSpeeds.fr = 0 #self.CS.v_wheel_fr
-    ret.wheelSpeeds.rl = 0 #self.CS.v_wheel_rl
-    ret.wheelSpeeds.rr = 0 #self.CS.v_wheel_rr
+    ret.wheelSpeeds.fl = self.CS.v_wheel_fl
+    ret.wheelSpeeds.fr = self.CS.v_wheel_fr
+    ret.wheelSpeeds.rl = self.CS.v_wheel_rl
+    ret.wheelSpeeds.rr = self.CS.v_wheel_rr
 
     # gear shifter
     ret.gearShifter = self.CS.gear_shifter
