@@ -272,7 +272,6 @@ class CarInterface(object):
     self.brake_pressed_prev = ret.brakePressed
     self.cruise_enabled_prev = ret.cruiseState.enabled
 
-    print ret.gas
     return ret.as_reader()
 
   # pass in a car.CarControl
